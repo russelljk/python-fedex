@@ -7,6 +7,9 @@ For more details on each, refer to the respective class's documentation.
 """
 from datetime import datetime
 from .. base_service import FedexBaseService
+from decimal import Decimal
+
+DECIMAL_WEIGHT_PRECISION = Decimal('0.1')
 
 class FedexProcessShipmentRequest(FedexBaseService):
     """
@@ -47,7 +50,7 @@ class FedexProcessShipmentRequest(FedexBaseService):
         
         TotalWeight = self.client.factory.create('Weight')
         # Start at nothing.
-        TotalWeight.Value = 0.0
+        TotalWeight.Value = Decimal('0.0')
         # Default to pounds.
         TotalWeight.Units = 'LB'
         # This is the total weight of the entire shipment. Shipments may
@@ -144,8 +147,9 @@ class FedexProcessShipmentRequest(FedexBaseService):
             more details.
         """
         self.RequestedShipment.RequestedPackageLineItems.append(package_item)
-        package_weight = package_item.Weight.Value
+        package_weight = Decimal(package_item.Weight.Value)
         self.RequestedShipment.TotalWeight.Value += package_weight
+        self.RequestedShipment.TotalWeight.Value.quantize(DECIMAL_WEIGHT_PRECISION)
         self.RequestedShipment.PackageCount += 1
         
 class FedexDeleteShipmentRequest(FedexBaseService):
